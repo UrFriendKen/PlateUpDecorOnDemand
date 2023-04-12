@@ -19,7 +19,7 @@ namespace KitchenDecorOnDemand
         // Mod Version must follow semver notation e.g. "1.2.3"
         public const string MOD_GUID = "IcedMilo.PlateUp.DecorOnDemand";
         public const string MOD_NAME = "Decor on Demand";
-        public const string MOD_VERSION = "0.1.1";
+        public const string MOD_VERSION = "0.1.2";
         public const string MOD_AUTHOR = "IcedMilo";
         public const string MOD_GAMEVERSION = ">=1.1.3";
         // Game version this mod is designed for in semver
@@ -71,7 +71,7 @@ namespace KitchenDecorOnDemand
             // AddGameData();
 
             // Perform actions when game data is built
-            Events.BuildGameDataEvent += (s, args) =>
+            Events.BuildGameDataPostViewInitEvent += (s, args) =>
             {
                 foreach (Decor decor in args.gamedata.Get<Decor>().Where(x => x.IsAvailable))
                 {

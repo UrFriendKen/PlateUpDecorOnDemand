@@ -1,79 +1,88 @@
 ﻿using Kitchen;
 using KitchenData;
-using KitchenLib;
-using KitchenLib.Event;
-using KitchenLib.Utils;
 using KitchenMods;
+using PreferenceSystem;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
+using System.Security.Cryptography;
+using System.Text;
 using UnityEngine;
 
 // Namespace should have "Kitchen" in the beginning
 namespace KitchenDecorOnDemand
 {
-    public class Main : BaseMod, IModSystem
+    public class Main : IModInitializer
     {
-        // GUID must be unique and is recommended to be in reverse domain name notation
-        // Mod Name is displayed to the player and listed in the mods menu
-        // Mod Version must follow semver notation e.g. "1.2.3"
         public const string MOD_GUID = "IcedMilo.PlateUp.DecorOnDemand";
         public const string MOD_NAME = "Decor on Demand";
-        public const string MOD_VERSION = "0.1.2";
-        public const string MOD_AUTHOR = "IcedMilo";
-        public const string MOD_GAMEVERSION = ">=1.1.3";
-        // Game version this mod is designed for in semver
-        // e.g. ">=1.1.3" current and all future
-        // e.g. ">=1.1.3 <=1.2.3" for all from/until
+        public const string MOD_VERSION = "0.1.3";
 
+        private const string MENU_START_OPEN_ID = "menuStartOpen";
+        private PreferenceSystemManager PrefManager;
+
+        public Main()
+        {
+        }
+
+        public void PostActivate(KitchenMods.Mod mod)
+        {
+            LogWarning($"{MOD_GUID} v{MOD_VERSION} in use!");
+
+            PrefManager = new PreferenceSystemManager(MOD_GUID, MOD_NAME);
+            PrefManager
+                .AddLabel("Menu Starts")
+                .AddOption<bool>(
+                    MENU_START_OPEN_ID,
+                    true,
+                    new bool[] { false, true },
+                    new string[] { "Closed", "Opened" })
+                .AddSpacer()
+                .AddSpacer();
+
+            PrefManager.RegisterMenu(PreferenceSystemManager.MenuType.MainMenu);
+            PrefManager.RegisterMenu(PreferenceSystemManager.MenuType.PauseMenu);
+        }
+
+        public void PreInject()
+        {
+            GameObject gameObject = new GameObject(MOD_NAME);
+            DecorGUI decorGUI = gameObject.AddComponent<DecorGUI>();
+            decorGUI.showMenu = PrefManager.Get<bool>(MENU_START_OPEN_ID);
+        }
+
+        public void PostInject() { }
+
+        #region Logging
+        public static void LogInfo(string _log) { Debug.Log($"[{MOD_NAME}] " + _log); }
+        public static void LogWarning(string _log) { Debug.LogWarning($"[{MOD_NAME}] " + _log); }
+        public static void LogError(string _log) { Debug.LogError($"[{MOD_NAME}] " + _log); }
+        public static void LogInfo(object _log) { LogInfo(_log.ToString()); }
+        public static void LogWarning(object _log) { LogWarning(_log.ToString()); }
+        public static void LogError(object _log) { LogError(_log.ToString()); }
+        #endregion
+    }
+
+    public class DecorGUI : MonoBehaviour
+    {
         public static Rect windowRect = new Rect(10, 600, 250, 600);
         private static Vector2 scrollPosition;
         private static string searchText = string.Empty;
         private static Dictionary<string, int> decors = new Dictionary<string, int>();
-        private static List<string> decorNames = new List<string>();
-        public static bool showMenu = true;
+        private static List<string> decorNames;
+        public bool showMenu = true;
 
-        public Main() : base(MOD_GUID, MOD_NAME, MOD_AUTHOR, MOD_VERSION, MOD_GAMEVERSION, Assembly.GetExecutingAssembly()) { }
-
-        protected override void OnInitialise()
-        {
-            GameObject gameObject = new GameObject();
-            gameObject.AddComponent<DecorGUI>();
-        }
-
-        private void AddGameData()
-        {
-            LogInfo("Attempting to register game data...");
-
-            // AddGameDataObject<MyCustomGDO>();
-
-            LogInfo("Done loading game data.");
-        }
-
-        protected override void OnUpdate()
+        public void Update()
         {
             if (Input.GetKeyDown(KeyCode.F3))
             {
                 showMenu = !showMenu;
             }
-        }
 
-        protected override void OnPostActivate(KitchenMods.Mod mod)
-        {
-            // TODO: Uncomment the following if you have an asset bundle.
-            // TODO: Also, make sure to set EnableAssetBundleDeploy to 'true' in your ModName.csproj
-
-            // LogInfo("Attempting to load asset bundle...");
-            // Bundle = mod.GetPacks<AssetBundleModPack>().SelectMany(e => e.AssetBundles).First();
-            // LogInfo("Done loading asset bundle.");
-
-            // Register custom GDOs
-            // AddGameData();
-
-            // Perform actions when game data is built
-            Events.BuildGameDataPostViewInitEvent += (s, args) =>
+            if (decorNames == null)
             {
-                foreach (Decor decor in args.gamedata.Get<Decor>().Where(x => x.IsAvailable))
+                decorNames = new List<string>();
+                foreach (Decor decor in GameData.Main.Get<Decor>().Where(x => x.IsAvailable))
                 {
                     string decorName = $"{decor.name}";
 
@@ -84,7 +93,36 @@ namespace KitchenDecorOnDemand
                     }
                 }
                 decorNames.Sort();
-            };
+            }
+        }
+
+        private int? _windowID = null;
+        public void OnGUI()
+        {
+            if (showMenu)
+            {
+                if (_windowID == null)
+                {
+                    _windowID = GetInt32HashCode(Main.MOD_GUID);
+                }
+                windowRect = GUILayout.Window(_windowID.Value, windowRect, DecorSpawnWindow, "Decor on Demand", GUILayout.Width(250f), GUILayout.Height(600f));
+            }
+            int GetInt32HashCode(string strText)
+            {
+                SHA1 hash = new SHA1CryptoServiceProvider();
+                if (string.IsNullOrEmpty(strText))
+                {
+                    return 0;
+                }
+
+                byte[] bytes = Encoding.Unicode.GetBytes(strText);
+                byte[] value = hash.ComputeHash(bytes);
+                uint num = BitConverter.ToUInt32(value, 0);
+                uint num2 = BitConverter.ToUInt32(value, 8);
+                uint num3 = BitConverter.ToUInt32(value, 16);
+                uint num4 = num ^ num2 ^ num3;
+                return BitConverter.ToInt32(BitConverter.GetBytes(uint.MaxValue - num4), 0);
+            }
         }
 
         public static void DecorSpawnWindow(int windowID)
@@ -107,25 +145,6 @@ namespace KitchenDecorOnDemand
 
             GUILayout.Label("Press F3 to toggle this menu.");
             GUI.DragWindow();
-        }
-        #region Logging
-        public static void LogInfo(string _log) { Debug.Log($"[{MOD_NAME}] " + _log); }
-        public static void LogWarning(string _log) { Debug.LogWarning($"[{MOD_NAME}] " + _log); }
-        public static void LogError(string _log) { Debug.LogError($"[{MOD_NAME}] " + _log); }
-        public static void LogInfo(object _log) { LogInfo(_log.ToString()); }
-        public static void LogWarning(object _log) { LogWarning(_log.ToString()); }
-        public static void LogError(object _log) { LogError(_log.ToString()); }
-        #endregion
-    }
-
-    public class DecorGUI : MonoBehaviour
-    {
-        public void OnGUI()
-        {
-            if (Main.showMenu)
-            {
-                Main.windowRect = GUILayout.Window(VariousUtils.GetID(Main.MOD_GUID), Main.windowRect, Main.DecorSpawnWindow, "Decor on Demand", GUILayout.Width(250f), GUILayout.Height(600f));
-            }
         }
     }
 

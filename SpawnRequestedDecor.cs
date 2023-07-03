@@ -1,27 +1,20 @@
 ﻿using Kitchen;
 using KitchenData;
-using System.Collections.Generic;
+using KitchenMods;
+using System;
 using Unity.Entities;
 using UnityEngine;
 
 namespace KitchenDecorOnDemand
 {
-    public class SpawnRequestedDecor : GameSystemBase
+    public class SpawnRequestedDecor : SpawnHandlerSystemBase, IModSystem
     {
-        static Queue<int> requestedDecors = new Queue<int>();
+        protected override Type GDOType => typeof(Decor);
 
-        protected override void OnUpdate()
+        protected override void Spawn(GameDataObject gdo, Vector3 position, SpawnApplianceMode spawnApplianceMode)
         {
-            if (requestedDecors.Count > 0)
-            {
-                int id = requestedDecors.Dequeue();
-                Decor decor = base.Data.Get<Decor>(id);
-                
-                if (decor != null)
-                {
-                    AddDecorationItem(decor.ApplicatorAppliance.ID, id, GetFrontDoor(get_external_tile: true), decor.Type);
-                }
-            }
+            if (gdo is Decor decor)
+                AddDecorationItem(decor.ApplicatorAppliance.ID, decor.ID, position, decor.Type);
         }
 
         protected void AddDecorationItem(int applicator_id, int wallpaper_id, Vector3 position, LayoutMaterialType type)
@@ -42,11 +35,6 @@ namespace KitchenDecorOnDemand
                 DrawApplianceID = wallpaper_id
             });
             base.EntityManager.AddComponentData(entity, default(CShopEntity));
-        }
-
-        public static void RequestDecor(int decorId)
-        {
-            requestedDecors.Enqueue(decorId);
         }
     }
 }

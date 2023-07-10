@@ -19,7 +19,7 @@ namespace KitchenDecorOnDemand
     {
         public const string MOD_GUID = "IcedMilo.PlateUp.DecorOnDemand";
         public const string MOD_NAME = "Stuff on Demand";
-        public const string MOD_VERSION = "0.2.0";
+        public const string MOD_VERSION = "0.2.1";
 
         internal const string MENU_START_OPEN_ID = "menuStartOpen";
         internal const string HOST_ONLY_ID = "hostOnly";
@@ -76,6 +76,16 @@ namespace KitchenDecorOnDemand
                         SpawnApplianceMode.Blueprint.ToString(),
                         Enum.GetNames(typeof(SpawnApplianceMode)),
                         Enum.GetNames(typeof(SpawnApplianceMode)))
+                .SubmenuDone()
+                .AddSubmenu("Decor", "decor")
+                    .AddButtonWithConfirm("Remove Applied Decor", "Strip applied wallpapers and flooring? This only works for the host.",
+                        delegate(GenericChoiceDecision decision)
+                        {
+                            if (Session.CurrentGameNetworkMode == GameNetworkMode.Host && decision == GenericChoiceDecision.Accept)
+                            {
+                                StripRequestSystem.Request();
+                            }
+                        })
                     .AddSpacer()
                     .AddSpacer()
                 .SubmenuDone()

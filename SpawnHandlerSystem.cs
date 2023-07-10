@@ -96,7 +96,7 @@ namespace KitchenDecorOnDemand
         }
         public static void Request<T>(int gdoID, SpawnPositionType positionType, int inputIdentifier = 0, SpawnApplianceMode spawnApplianceMode = default) where T : GameDataObject, new()
         {
-            if (GameInfo.CurrentScene == SceneType.Kitchen && GameData.Main.TryGet(gdoID, out T gdo, warn_if_fail: true))
+            if (gdoID != 0 && GameInfo.CurrentScene == SceneType.Kitchen && GameData.Main.TryGet(gdoID, out T gdo, warn_if_fail: true))
             {
                 requests.Enqueue(new SpawnRequest()
                 {

@@ -19,7 +19,7 @@ namespace KitchenDecorOnDemand
     {
         public const string MOD_GUID = "IcedMilo.PlateUp.DecorOnDemand";
         public const string MOD_NAME = "Stuff on Demand";
-        public const string MOD_VERSION = "0.2.1";
+        public const string MOD_VERSION = "0.2.2";
 
         internal const string MENU_START_OPEN_ID = "menuStartOpen";
         internal const string HOST_ONLY_ID = "hostOnly";
@@ -31,6 +31,8 @@ namespace KitchenDecorOnDemand
 
         Harmony harmony;
         static List<Assembly> PatchedAssemblies = new List<Assembly>();
+
+        SpawnGUI _spawnGUI;
 
         public Main()
         {
@@ -90,6 +92,12 @@ namespace KitchenDecorOnDemand
                     .AddSpacer()
                 .SubmenuDone()
                 .AddSpacer()
+                .AddButton("Toggle Menu", delegate(int _)
+                {
+                    if (_spawnGUI != null)
+                        _spawnGUI.showMenu = !_spawnGUI.showMenu;
+                })
+                .AddSpacer()
                 .AddSpacer();
 
             PrefManager.RegisterMenu(PreferenceSystemManager.MenuType.MainMenu);
@@ -101,8 +109,8 @@ namespace KitchenDecorOnDemand
             if (GameObject.FindObjectOfType<SpawnGUI>() == null)
             {
                 GameObject gameObject = new GameObject(MOD_NAME);
-                SpawnGUI spawnGUI = gameObject.AddComponent<SpawnGUI>();
-                spawnGUI.showMenu = PrefManager.Get<bool>(MENU_START_OPEN_ID);
+                _spawnGUI = gameObject.AddComponent<SpawnGUI>();
+                _spawnGUI.showMenu = PrefManager.Get<bool>(MENU_START_OPEN_ID);
             }
         }
         public static int GetInt32HashCode(string strText)

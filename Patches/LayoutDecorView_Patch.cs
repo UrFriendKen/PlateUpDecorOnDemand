@@ -14,8 +14,7 @@ namespace KitchenDecorOnDemand.Patches
         [HarmonyPrefix]
         static bool UpdateDecorations_Prefix(int room, LayoutMaterialType type, int id, ref LayoutView ___LayoutView)
         {
-            Main.LogWarning(id);
-            if (id == 0)
+            if (GameInfo.CurrentScene == SceneType.Kitchen && id == 0)
             {
                 LayoutPrefabSet.MaterialType materialType = new LayoutPrefabSet.MaterialType()
                 {

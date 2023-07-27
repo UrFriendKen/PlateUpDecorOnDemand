@@ -1,6 +1,7 @@
 ﻿using HarmonyLib;
 using Kitchen;
 using KitchenData;
+using KitchenDecorOnDemand.Utils;
 using KitchenMods;
 using PreferenceSystem;
 using PreferenceSystem.Utils;
@@ -19,7 +20,7 @@ namespace KitchenDecorOnDemand
     {
         public const string MOD_GUID = "IcedMilo.PlateUp.DecorOnDemand";
         public const string MOD_NAME = "Stuff on Demand";
-        public const string MOD_VERSION = "0.2.4";
+        public const string MOD_VERSION = "0.2.5";
 
         internal const string MENU_START_OPEN_ID = "menuStartOpen";
         internal const string HOST_ONLY_ID = "hostOnly";
@@ -145,6 +146,8 @@ namespace KitchenDecorOnDemand
     public class SpawnGUI : MonoBehaviour
     {
         private const int MAX_DUPLICATE_NAMES = 100;
+        private const float WINDOW_WIDTH = 250f;
+        private const float WINDOW_HEIGHT = 600f;
 
         private static Dictionary<string, int> decors = new Dictionary<string, int>();
         private static List<string> decorNames;
@@ -156,6 +159,9 @@ namespace KitchenDecorOnDemand
         private string searchText = string.Empty;
         private SpawnType currentMode = SpawnType.Decor;
         public bool showMenu = true;
+
+        private string _hoveredName = null;
+        Texture2D _hoveredTexture = null;
 
         private SpawnRequestView spawnRequestView;
 
@@ -228,7 +234,7 @@ namespace KitchenDecorOnDemand
                 {
                     _windowID = Main.GetInt32HashCode(Main.MOD_GUID);
                 }
-                windowRect = GUILayout.Window(_windowID.Value, windowRect, SpawnWindow, "Decor on Demand", GUILayout.Width(250f), GUILayout.Height(600f));
+                windowRect = GUILayout.Window(_windowID.Value, windowRect, SpawnWindow, "Decor on Demand", GUILayout.Width(WINDOW_WIDTH), GUILayout.Height(WINDOW_HEIGHT));
             }
         }
 
@@ -269,7 +275,7 @@ namespace KitchenDecorOnDemand
             {
                 if (string.IsNullOrEmpty(searchText) || gdoNames[i].ToLower().Contains(searchText.ToLower()))
                 {
-                    if (GUILayout.Button(new GUIContent(gdoNames[i], $"Click button to spawn {gdoNames[i]}")))
+                    if (GUILayout.Button(new GUIContent(gdoNames[i], gdoNames[i])))
                     {
                         if (spawnMethod != null)
                             spawnMethod(gdoDict[gdoNames[i]]);
@@ -278,8 +284,39 @@ namespace KitchenDecorOnDemand
             }
             GUILayout.EndScrollView();
 
+            string hoveredName = GUI.tooltip;
+            if (hoveredName != _hoveredName)
+            {
+                _hoveredName = hoveredName;
+                _hoveredTexture = null;
+                if (!hoveredName.IsNullOrEmpty())
+                {
+                    switch (currentMode)
+                    {
+                        case SpawnType.Appliance:
+                            _hoveredTexture = PrefabSnapshotUtils.GetApplianceSnapshot(gdoDict[hoveredName]);
+                            break;
+                        case SpawnType.Decor:
+                            _hoveredTexture = PrefabSnapshotUtils.GetDecorSnapshot(gdoDict[hoveredName]);
+                            break;
+                    }
+                }
+            }
+
             GUILayout.Label("Press F3 to toggle this menu.");
+            if (_hoveredTexture != null)
+            {
+                Vector2 mousePos = Event.current.mousePosition;
+                Vector2 rectPos = new Vector2(mousePos.x, mousePos.y);
+                Vector2 rectSize = Vector2.one * 100f;
+                if (mousePos.x > WINDOW_WIDTH / 2f)
+                    rectPos.x = mousePos.x - rectSize.x;
+                if (mousePos.y > WINDOW_HEIGHT / 2f)
+                    rectPos.y = mousePos.y - rectSize.y;
+                GUI.DrawTexture(new Rect(rectPos, rectSize), _hoveredTexture, ScaleMode.ScaleToFit);
+            }
             GUI.DragWindow();
+            
         }
     }
 }

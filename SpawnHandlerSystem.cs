@@ -42,7 +42,6 @@ namespace KitchenDecorOnDemand
                 switch (SpawnRequestSystem.Current.PositionType)
                 {
                     case SpawnPositionType.Player:
-                        Main.LogInfo("Using Player");
                         bool positionSet = false;
                         for (int i = 0; i < players.Length; i++)
                         {

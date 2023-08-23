@@ -20,11 +20,12 @@ namespace KitchenDecorOnDemand
     {
         public const string MOD_GUID = "IcedMilo.PlateUp.DecorOnDemand";
         public const string MOD_NAME = "Stuff on Demand";
-        public const string MOD_VERSION = "0.2.5";
+        public const string MOD_VERSION = "0.2.6";
 
         internal const string MENU_START_OPEN_ID = "menuStartOpen";
         internal const string HOST_ONLY_ID = "hostOnly";
         internal const string APPLIANCE_SPAWN_AS_ID = "applianceSpawnAs";
+        internal const string APPLIANCE_BLUEPRINT_COST_ID = "applianceBlueprintCost";
         internal const string SPAWN_AT_ID = "spawnAt";
         internal static PreferenceSystemManager PrefManager;
 
@@ -72,6 +73,7 @@ namespace KitchenDecorOnDemand
                     Enum.GetNames(typeof(SpawnPositionType)),
                     Enum.GetNames(typeof(SpawnPositionType)))
                 .AddSpacer()
+                .AddConditionalBlocker(() => Session.CurrentGameNetworkMode != GameNetworkMode.Host)
                 .AddSubmenu("Appliance", "appliance")
                     .AddLabel("Spawn As")
                     .AddOption<string>(
@@ -79,6 +81,14 @@ namespace KitchenDecorOnDemand
                         SpawnApplianceMode.Blueprint.ToString(),
                         Enum.GetNames(typeof(SpawnApplianceMode)),
                         Enum.GetNames(typeof(SpawnApplianceMode)))
+                    .AddLabel("Blueprint Cost")
+                    .AddOption<float>(
+                        APPLIANCE_BLUEPRINT_COST_ID,
+                        0,
+                        new float[] { 0, 0.5f, 1 },
+                        new string[] { "Free", "Half Price", "Original Price" })
+                    .AddSpacer()
+                    .AddSpacer()
                 .SubmenuDone()
                 .AddSubmenu("Decor", "decor")
                     .AddButtonWithConfirm("Remove Applied Decor", "Strip applied wallpapers and flooring? This only works for the host.",
@@ -93,6 +103,7 @@ namespace KitchenDecorOnDemand
                     .AddSpacer()
                 .SubmenuDone()
                 .AddSpacer()
+                .ConditionalBlockerDone()
                 .AddButton("Toggle Menu", delegate(int _)
                 {
                     if (_spawnGUI != null)
@@ -234,7 +245,7 @@ namespace KitchenDecorOnDemand
                 {
                     _windowID = Main.GetInt32HashCode(Main.MOD_GUID);
                 }
-                windowRect = GUILayout.Window(_windowID.Value, windowRect, SpawnWindow, "Decor on Demand", GUILayout.Width(WINDOW_WIDTH), GUILayout.Height(WINDOW_HEIGHT));
+                windowRect = GUILayout.Window(_windowID.Value, windowRect, SpawnWindow, "Stuff on Demand", GUILayout.Width(WINDOW_WIDTH), GUILayout.Height(WINDOW_HEIGHT));
             }
         }
 

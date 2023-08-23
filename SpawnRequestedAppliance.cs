@@ -14,7 +14,6 @@ namespace KitchenDecorOnDemand
 
     public class SpawnRequestedAppliance : SpawnHandlerSystemBase, IModSystem
     {
-
         protected override Type GDOType => typeof(Appliance);
 
         protected override bool UseFallbackTile => true;
@@ -38,7 +37,7 @@ namespace KitchenDecorOnDemand
 
         protected void AddApplianceBlueprint(Appliance appliance, Vector3 position)
         {
-            PostHelpers.CreateOpenedLetter(new EntityContext(EntityManager), position, appliance.ID, 0f);
+            PostHelpers.CreateOpenedLetter(new EntityContext(EntityManager), position, appliance.ID, Main.PrefManager.Get<float>(Main.APPLIANCE_BLUEPRINT_COST_ID));
         }
 
         protected void AddApplianceParcel(Appliance appliance, Vector3 position)

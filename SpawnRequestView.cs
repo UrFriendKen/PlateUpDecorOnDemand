@@ -53,7 +53,11 @@ namespace KitchenDecorOnDemand
                     }
                     if (spawnMethod == null)
                         return;
-                    spawnMethod(data.GdoId, data.PositionType, data.InputIdentifier, data.SpawnApplianceMode);
+                    if (!Enum.TryParse(Main.PrefManager.Get<string>(Main.APPLIANCE_SPAWN_AS_ID), out SpawnApplianceMode spawnApplianceMode))
+                    {
+                        spawnApplianceMode = default;
+                    }
+                    spawnMethod(data.GdoId, data.PositionType, data.InputIdentifier, spawnApplianceMode);
                 }
             }
 

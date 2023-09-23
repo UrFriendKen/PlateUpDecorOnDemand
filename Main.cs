@@ -20,7 +20,7 @@ namespace KitchenDecorOnDemand
     {
         public const string MOD_GUID = "IcedMilo.PlateUp.DecorOnDemand";
         public const string MOD_NAME = "Stuff on Demand";
-        public const string MOD_VERSION = "0.2.6";
+        public const string MOD_VERSION = "0.2.7";
 
         internal const string MENU_START_OPEN_ID = "menuStartOpen";
         internal const string HOST_ONLY_ID = "hostOnly";
@@ -116,6 +116,7 @@ namespace KitchenDecorOnDemand
             PrefManager.RegisterMenu(PreferenceSystemManager.MenuType.PauseMenu);
         }
 
+        FieldInfo f_Item = typeof(CItemProvider).GetField("Item", BindingFlags.NonPublic | BindingFlags.Instance);
         public void PreInject()
         {
             if (GameObject.FindObjectOfType<SpawnGUI>() == null)
@@ -124,7 +125,20 @@ namespace KitchenDecorOnDemand
                 _spawnGUI = gameObject.AddComponent<SpawnGUI>();
                 _spawnGUI.showMenu = PrefManager.Get<bool>(MENU_START_OPEN_ID);
             }
+
+            // Populate missing CItemProvider in dedicated appliances
+            foreach (Item item in GameData.Main.Get<Item>())
+            {
+                IEnumerable<Type> propertyTypes = item.DedicatedProvider?.Properties?.Select(x => x.GetType());
+                if ((propertyTypes?.Contains(typeof(CItemProvider)) ?? true) || propertyTypes.Contains(typeof(CDynamicMenuProvider)))
+                    continue;
+                CItemProvider provider = CItemProvider.InfiniteItemProvider(item.ID);
+                f_Item?.SetValueDirect(__makeref(provider), item.ID);
+                item.DedicatedProvider.Properties.Add(provider);
+                Main.LogInfo($"Populated CItemProvider for {item.name} in dedicated provider ({item.DedicatedProvider.name})");
+            }
         }
+
         public static int GetInt32HashCode(string strText)
         {
             SHA1 hash = new SHA1CryptoServiceProvider();

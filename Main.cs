@@ -20,10 +20,10 @@ namespace KitchenDecorOnDemand
     {
         public const string MOD_GUID = "IcedMilo.PlateUp.DecorOnDemand";
         public const string MOD_NAME = "Stuff on Demand";
-        public const string MOD_VERSION = "0.2.7";
+        public const string MOD_VERSION = "0.2.8";
 
         internal const string MENU_START_OPEN_ID = "menuStartOpen";
-        internal const string HOST_ONLY_ID = "hostOnly";
+        internal const string HOST_ONLY_ID = "hostOnly2";
         internal const string APPLIANCE_SPAWN_AS_ID = "applianceSpawnAs";
         internal const string APPLIANCE_BLUEPRINT_COST_ID = "applianceBlueprintCost";
         internal const string SPAWN_AT_ID = "spawnAt";
@@ -63,7 +63,7 @@ namespace KitchenDecorOnDemand
                 .AddLabel("Can Spawn")
                 .AddOption<bool>(
                     HOST_ONLY_ID,
-                    false,
+                    true,
                     new bool[] { false, true },
                     new string[] { "Everyone", "Only Host" })
                 .AddLabel("Spawn At")

@@ -23,6 +23,7 @@ namespace KitchenDecorOnDemand
         public const string MOD_VERSION = "0.2.9";
 
         internal const string MENU_START_OPEN_ID = "menuStartOpen";
+        internal const string MENU_START_TAB_ID = "menuStartTab";
         internal const string HOST_ONLY_ID = "hostOnly2";
         internal const string APPLIANCE_SPAWN_AS_ID = "applianceSpawnAs";
         internal const string APPLIANCE_BLUEPRINT_COST_ID = "applianceBlueprintCost";
@@ -54,57 +55,69 @@ namespace KitchenDecorOnDemand
 
             PrefManager = new PreferenceSystemManager(MOD_GUID, MOD_NAME);
             PrefManager
-                .AddLabel("Menu Starts")
-                .AddOption<bool>(
-                    MENU_START_OPEN_ID,
-                    true,
-                    new bool[] { false, true },
-                    new string[] { "Closed", "Opened" })
-                .AddLabel("Can Spawn")
-                .AddOption<bool>(
-                    HOST_ONLY_ID,
-                    true,
-                    new bool[] { false, true },
-                    new string[] { "Everyone", "Only Host" })
-                .AddLabel("Spawn At")
-                .AddOption<string>(
-                    SPAWN_AT_ID,
-                    SpawnPositionType.Door.ToString(),
-                    Enum.GetNames(typeof(SpawnPositionType)),
-                    Enum.GetNames(typeof(SpawnPositionType)))
-                .AddSpacer()
                 .AddConditionalBlocker(() => Session.CurrentGameNetworkMode != GameNetworkMode.Host)
-                .AddSubmenu("Appliance", "appliance")
-                    .AddLabel("Spawn As")
+                    .AddLabel("Spawn At")
                     .AddOption<string>(
-                        APPLIANCE_SPAWN_AS_ID,
-                        SpawnApplianceMode.Blueprint.ToString(),
-                        Enum.GetNames(typeof(SpawnApplianceMode)),
-                        Enum.GetNames(typeof(SpawnApplianceMode)))
-                    .AddLabel("Blueprint Cost")
-                    .AddOption<float>(
-                        APPLIANCE_BLUEPRINT_COST_ID,
-                        0,
-                        new float[] { 0, 0.5f, 1 },
-                        new string[] { "Free", "Half Price", "Original Price" })
+                        SPAWN_AT_ID,
+                        SpawnPositionType.Door.ToString(),
+                        Enum.GetNames(typeof(SpawnPositionType)),
+                        Enum.GetNames(typeof(SpawnPositionType)))
                     .AddSpacer()
-                    .AddSpacer()
-                .SubmenuDone()
-                .AddSubmenu("Decor", "decor")
-                    .AddButtonWithConfirm("Remove Applied Decor", "Strip applied wallpapers and flooring? This only works for the host.",
-                        delegate(GenericChoiceDecision decision)
-                        {
-                            if (Session.CurrentGameNetworkMode == GameNetworkMode.Host && decision == GenericChoiceDecision.Accept)
+                    .AddSubmenu("Appliance", "appliance")
+                        .AddLabel("Spawn As")
+                        .AddOption<string>(
+                            APPLIANCE_SPAWN_AS_ID,
+                            SpawnApplianceMode.Blueprint.ToString(),
+                            Enum.GetNames(typeof(SpawnApplianceMode)),
+                            Enum.GetNames(typeof(SpawnApplianceMode)))
+                        .AddLabel("Blueprint Cost")
+                        .AddOption<float>(
+                            APPLIANCE_BLUEPRINT_COST_ID,
+                            0,
+                            new float[] { 0, 0.5f, 1 },
+                            new string[] { "Free", "Half Price", "Original Price" })
+                        .AddSpacer()
+                        .AddSpacer()
+                    .SubmenuDone()
+                    .AddSubmenu("Decor", "decor")
+                        .AddButtonWithConfirm("Remove Applied Decor", "Strip applied wallpapers and flooring? This only works for the host.",
+                            delegate(GenericChoiceDecision decision)
                             {
-                                StripRequestSystem.Request();
-                            }
-                        })
+                                if (Session.CurrentGameNetworkMode == GameNetworkMode.Host && decision == GenericChoiceDecision.Accept)
+                                {
+                                    StripRequestSystem.Request();
+                                }
+                            })
+                        .AddSpacer()
+                        .AddSpacer()
+                    .SubmenuDone()
+                    .AddSpacer()
+                .ConditionalBlockerDone()
+                .AddSubmenu("Menu Settings", "menuSettings")
+                    .AddLabel("Menu Starts")
+                    .AddOption<bool>(
+                        MENU_START_OPEN_ID,
+                        true,
+                        new bool[] { false, true },
+                        new string[] { "Closed", "Opened" })
+                    .AddLabel("Starting Tab")
+                    .AddOption<string>(
+                        MENU_START_TAB_ID,
+                        SpawnType.Decor.ToString(),
+                        Enum.GetNames(typeof(SpawnType)),
+                        Enum.GetNames(typeof(SpawnType)))
+                    .AddConditionalBlocker(() => Session.CurrentGameNetworkMode != GameNetworkMode.Host)
+                        .AddLabel("Can Spawn")
+                        .AddOption<bool>(
+                            HOST_ONLY_ID,
+                            true,
+                            new bool[] { false, true },
+                            new string[] { "Everyone", "Only Host" })
+                    .ConditionalBlockerDone()
                     .AddSpacer()
                     .AddSpacer()
                 .SubmenuDone()
-                .AddSpacer()
-                .ConditionalBlockerDone()
-                .AddButton("Toggle Menu", delegate(int _)
+                .AddButton("Show/Hide Menu", delegate(int _)
                 {
                     if (_spawnGUI != null)
                         _spawnGUI.showMenu = !_spawnGUI.showMenu;
@@ -183,7 +196,15 @@ namespace KitchenDecorOnDemand
             1836107598,
             369884364,
             -699013948
-    };
+        };
+
+        private void Start()
+        {
+            if (Enum.TryParse(Main.PrefManager?.Get<string>(Main.MENU_START_TAB_ID), out SpawnType spawnType))
+            {
+                currentMode = spawnType;
+            }
+        }
 
         public void Update()
         {

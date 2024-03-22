@@ -20,7 +20,7 @@ namespace KitchenDecorOnDemand
     {
         public const string MOD_GUID = "IcedMilo.PlateUp.DecorOnDemand";
         public const string MOD_NAME = "Stuff on Demand";
-        public const string MOD_VERSION = "0.2.9";
+        public const string MOD_VERSION = "0.2.10";
 
         internal const string MENU_START_OPEN_ID = "menuStartOpen";
         internal const string MENU_START_TAB_ID = "menuStartTab";
@@ -221,8 +221,12 @@ namespace KitchenDecorOnDemand
             if (decorNames == null)
             {
                 decorNames = new List<string>();
-                foreach (Decor decor in GameData.Main.Get<Decor>().Where(x => x.IsAvailable))
+                foreach (Decor decor in GameData.Main.Get<Decor>())
                 {
+                    if (!decor.IsAvailable)
+                    {
+                        Main.LogWarning($"Adding disabled Decor: {decor.name} ({decor.Type})");
+                    }
                     string decorName = $"{decor.name}";
 
                     if (!decorNames.Contains(decorName))

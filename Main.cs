@@ -20,7 +20,7 @@ namespace KitchenDecorOnDemand
     {
         public const string MOD_GUID = "IcedMilo.PlateUp.DecorOnDemand";
         public const string MOD_NAME = "Stuff on Demand";
-        public const string MOD_VERSION = "0.2.10";
+        public const string MOD_VERSION = "0.2.11";
 
         internal const string MENU_START_OPEN_ID = "menuStartOpen";
         internal const string MENU_START_TAB_ID = "menuStartTab";
@@ -298,7 +298,7 @@ namespace KitchenDecorOnDemand
                     break;
                 case SpawnType.Decor:
                 default:
-                    gdoNames = decorNames;
+                    gdoNames = decorNames ;
                     gdoDict = decors;
                     if (spawnRequestView != null)
                         spawnMethod = spawnRequestView.Request<Decor>;
@@ -307,6 +307,11 @@ namespace KitchenDecorOnDemand
             GUILayout.Space(1);
             GUILayout.Label("Search:");
             searchText = GUILayout.TextField(searchText);
+
+            if (gdoNames == null)
+                return;
+
+
             scrollPosition = GUILayout.BeginScrollView(scrollPosition, false, false, GUIStyle.none, GUI.skin.verticalScrollbar);
             for (int i = 0; i < gdoNames.Count; i++)
             {

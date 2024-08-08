@@ -20,7 +20,7 @@ namespace KitchenDecorOnDemand
     {
         public const string MOD_GUID = "IcedMilo.PlateUp.DecorOnDemand";
         public const string MOD_NAME = "Stuff on Demand";
-        public const string MOD_VERSION = "0.2.11";
+        public const string MOD_VERSION = "0.2.12";
 
         internal const string MENU_START_OPEN_ID = "menuStartOpen";
         internal const string MENU_START_TAB_ID = "menuStartTab";
@@ -244,7 +244,7 @@ namespace KitchenDecorOnDemand
                 foreach (Appliance appliance in GameData.Main.Get<Appliance>())
                 {
                     if (DISABLED_APPLIANCES.Contains(appliance.ID) ||
-                        appliance.Properties.Select(x => x.GetType()).Contains(typeof(CImmovable)))
+                        appliance.Properties.Where(x => x != null).Select(x => x.GetType()).Contains(typeof(CImmovable)))
                         continue;
                     string applianceName = $"{(appliance.Name.IsNullOrEmpty() ? appliance.name : appliance.Name)}";
                     for (int i = 1; i < MAX_DUPLICATE_NAMES + 1; i++)

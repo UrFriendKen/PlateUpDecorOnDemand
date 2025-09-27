@@ -52,10 +52,9 @@ namespace KitchenDecorOnDemand
         public void PostActivate(KitchenMods.Mod mod)
         {
             LogWarning($"{MOD_GUID} v{MOD_VERSION} in use!");
-
             PrefManager = new PreferenceSystemManager(MOD_GUID, MOD_NAME);
             PrefManager
-                .AddConditionalBlocker(() => Session.CurrentGameNetworkMode != GameNetworkMode.Host)
+                .AddHostStatusConditionalBlocker()
                     .AddLabel("Spawn At")
                     .AddOption<string>(
                         SPAWN_AT_ID,
@@ -83,7 +82,7 @@ namespace KitchenDecorOnDemand
                         .AddButtonWithConfirm("Remove Applied Decor", "Strip applied wallpapers and flooring? This only works for the host.",
                             delegate(GenericChoiceDecision decision)
                             {
-                                if (Session.CurrentGameNetworkMode == GameNetworkMode.Host && decision == GenericChoiceDecision.Accept)
+                                if (Session.HostIdentifier == 0 && decision == GenericChoiceDecision.Accept)
                                 {
                                     StripRequestSystem.Request();
                                 }
@@ -106,7 +105,7 @@ namespace KitchenDecorOnDemand
                         SpawnType.Decor.ToString(),
                         Enum.GetNames(typeof(SpawnType)),
                         Enum.GetNames(typeof(SpawnType)))
-                    .AddConditionalBlocker(() => Session.CurrentGameNetworkMode != GameNetworkMode.Host)
+                    .AddHostStatusConditionalBlocker()
                         .AddLabel("Can Spawn")
                         .AddOption<bool>(
                             HOST_ONLY_ID,

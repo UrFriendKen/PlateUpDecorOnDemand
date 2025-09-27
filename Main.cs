@@ -20,7 +20,7 @@ namespace KitchenDecorOnDemand
     {
         public const string MOD_GUID = "IcedMilo.PlateUp.DecorOnDemand";
         public const string MOD_NAME = "Stuff on Demand";
-        public const string MOD_VERSION = "0.2.12";
+        public const string MOD_VERSION = "0.2.13";
 
         internal const string MENU_START_OPEN_ID = "menuStartOpen";
         internal const string MENU_START_TAB_ID = "menuStartTab";
